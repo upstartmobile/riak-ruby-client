@@ -5,7 +5,7 @@ warn Riak.t('deprecated.failed_request', :backtrace => "    "+caller.join("\n   
 module Riak
   module Errors
     # Methods added to {Riak::Error} for backwards compatibility with
-    # the deprecated FailedRequest class.    
+    # the deprecated FailedRequest class.
     module FailedRequestDeprecated
       include Util::Translation
 
@@ -40,8 +40,9 @@ module Riak
         Riak::Errors::ServerError === self
       end
     end
+
+    Error.send(:include, Errors::FailedRequestDeprecated)
   end
-  
-  Error.send(:include, Errors::FailedRequestDeprecated)
-  ProtobuffsFailedRequest = HTTPFailedRequest = FailedRequest = Error
+
+  ProtobuffsFailedRequest = HTTPFailedRequest = FailedRequest = Errors::Error
 end
