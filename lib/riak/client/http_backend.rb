@@ -6,6 +6,7 @@ require 'riak/json'
 require 'riak/client'
 require 'riak/bucket'
 require 'riak/robject'
+require 'riak/errors'
 require 'riak/client/http_backend/transport_methods'
 require 'riak/client/http_backend/object_methods'
 require 'riak/client/http_backend/configuration'
@@ -23,10 +24,12 @@ module Riak
       include Util::Escape
       include Util::Translation
       include FeatureDetection
+      include Errors
 
       include TransportMethods
       include ObjectMethods
       include Configuration
+      include ErrorHandling
 
       # The Riak::Client that uses this backend
       attr_reader :client
@@ -38,8 +41,8 @@ module Riak
       # @param [Client] The client
       # @param [Node] The node we're connecting to.
       def initialize(client, node)
-        raise ArgumentError, t("client_type", :client => client) unless Client === client
-        raise ArgumentError, t("node_type", :node => node) unless Node === node
+        Errors::ClientArgument.expect!(client)
+        Errors::NodeArgument.expect!(node)
         @client = client
         @node = node
       end
@@ -164,7 +167,7 @@ module Riak
       # @return [Array<Object>] the list of results, if no block was
       #        given
       def mapred(mr)
-        raise MapReduceError.new(t("empty_map_reduce_query")) if mr.query.empty? && !mapred_phaseless?
+        raise Errors::MapReduce::EmptyQuery if mr.query.empty? && !mapred_phaseless?
         if block_given?
           parser = Riak::Util::Multipart::StreamParser.new do |response|
             result = JSON.parse(response[:body])
@@ -221,12 +224,12 @@ module Riak
         bucket = bucket.name if Bucket === bucket
         path = case query
                when Range
-                 raise ArgumentError, t('invalid_index_query', :value => query.inspect) unless String === query.begin || Integer === query.end
+                 raise InvalidIndexQuery.new(query) unless String === query.begin || Integer === query.end
                  index_range_path(bucket, index, query.begin, query.end)
                when String, Integer
                  index_eq_path(bucket, index, query)
                else
-                 raise ArgumentError, t('invalid_index_query', :value => query.inspect)
+                 raise InvalidIndexQuery.new(query)
                end
         response = get(200, path)
         JSON.parse(response[:body])['keys']

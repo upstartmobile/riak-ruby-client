@@ -59,7 +59,7 @@ module Riak
         when nil
           @basic_auth = nil
         when String
-          raise ArgumentError, t("invalid_basic_auth") unless value.to_s.split(':').length === 2
+          raise Errors::InvalidBasicAuth unless value.to_s.split(':').length === 2
           @basic_auth = value
         end
       end
@@ -100,7 +100,7 @@ module Riak
         @ssl_options[:pem] = File.read(@ssl_options[:pem_file]) if @ssl_options[:pem_file]
         @ssl_options[:verify_mode] ||= "peer" if @ssl_options.stringify_keys.any? {|k,v| %w[pem ca_file ca_path].include?(k)}
         @ssl_options[:verify_mode] ||= "none"
-        raise ArgumentError.new(t('invalid_ssl_verify_mode', :invalid => @ssl_options[:verify_mode])) unless %w[none peer].include?(@ssl_options[:verify_mode])
+        raise Errors::InvalidSSLVerifyMode.new(@ssl_options[:verify_mode]) unless %w[none peer].include?(@ssl_options[:verify_mode])
 
         @ssl_options
       end

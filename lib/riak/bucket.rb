@@ -1,7 +1,7 @@
 require 'riak/util/translation'
 require 'riak/client'
 require 'riak/robject'
-require 'riak/failed_request'
+require 'riak/errors'
 
 module Riak
   # Represents and encapsulates operations on a Riak bucket.  You may retrieve a bucket
@@ -22,8 +22,8 @@ module Riak
     # @param [Client] client the {Riak::Client} for this bucket
     # @param [String] name the name of the bucket
     def initialize(client, name)
-      raise ArgumentError, t("client_type", :client => client.inspect) unless Client === client
-      raise ArgumentError, t("string_type", :string => name.inspect) unless String === name
+      Errors::ClientArgument.expect!(client)
+      Errors::StringArgument.expect!(name)
       @client, @name = client, name
     end
 
@@ -61,10 +61,10 @@ module Riak
     # @option properties [Fixnum,String] :rw ("quorum") delete quorum (numeric or
     # symbolic)
     # @return [Hash] the merged bucket properties
-    # @raise [FailedRequest] if the new properties were not accepted by the Riakserver
+    # @raise [Errors::Error] if the new properties were not accepted by the Riakserver
     # @see #n_value, #allow_mult, #r, #w, #dw, #rw
     def props=(properties)
-      raise ArgumentError, t("hash_type", :hash => properties.inspect) unless Hash === properties
+      Errors::HashArgument.expect!(properties)
       props.merge!(properties)
       @client.set_bucket_props(self, properties)
       props
@@ -83,7 +83,8 @@ module Riak
     # @param [Hash] options query parameters for the request
     # @option options [Fixnum] :r - the read quorum for the request - how many nodes should concur on the read
     # @return [Riak::RObject] the object
-    # @raise [FailedRequest] if the object is not found or some other error occurs
+    # @raise [Errors::NotFound] if the object is not found
+    # @raise [Errors::Error] if some other error occurs
     def get(key, options={})
       @client.get_object(self, key, options)
     end
@@ -102,15 +103,9 @@ module Riak
     # @param [String] key the key to fetch or create
     # @return [RObject] the new or existing object
     def get_or_new(key, options={})
-      begin
-        get(key, options)
-      rescue Riak::FailedRequest => fr
-        if fr.not_found?
-          new(key)
-        else
-          raise fr
-        end
-      end
+      get(key, options)
+    rescue Errors::NotFound
+      new(key)
     end
 
     # Checks whether an object exists in Riak.
@@ -119,12 +114,10 @@ module Riak
     # @option options [Fixnum] :r - the read quorum value for the request (R)
     # @return [true, false] whether the key exists in this bucket
     def exists?(key, options={})
-      begin
-        get(key, options)
-        true
-      rescue Riak::FailedRequest
-        false
-      end
+      get(key, options)
+      true
+    rescue Errors::NotFound
+      false
     end
     alias :exist? :exists?
 

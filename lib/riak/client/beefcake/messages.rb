@@ -44,12 +44,12 @@ module Riak
         required :errmsg,  :bytes,  1
         required :errcode, :uint32, 2
       end
-
+      
       class RpbGetClientIdResp
         include Beefcake::Message
         required :client_id, :bytes, 1
       end
-
+      
       class RpbSetClientIdReq
         include Beefcake::Message
         required :client_id, :bytes, 1
@@ -208,6 +208,38 @@ module Riak
         optional :max_score, :float,  2
         optional :num_found, :uint32, 3
       end
+
+      MESSAGES = [
+                  RpbErrorResp,
+                  nil, # PingReq
+                  nil, # PingResp
+                  nil, # GetClientIdReq
+                  RpbGetClientIdResp,
+                  RpbSetClientIdReq,
+                  nil, # SetClientIdResp
+                  nil, # GetServerInfoReq
+                  RpbGetServerInfoResp,
+                  RpbGetReq,
+                  RpbGetResp,
+                  RpbPutReq,
+                  RpbPutResp,
+                  RpbDelReq,
+                  nil,
+                  nil,
+                  RpbListBucketsResp,
+                  RpbListKeysReq,
+                  RpbListKeysResp,
+                  RpbGetBucketReq,
+                  RpbGetBucketResp,
+                  RpbSetBucketReq,
+                  nil, # SetBucketResp
+                  RpbMapRedReq,
+                  RpbMapRedResp,
+                  RpbIndexReq,
+                  RpbIndexResp,
+                  RpbSearchQueryReq,
+                  RpbSearchQueryResp,                  
+                 ]
     end
   end
 end

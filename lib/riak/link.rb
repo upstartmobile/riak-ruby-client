@@ -1,4 +1,3 @@
-
 require 'riak/util/translation'
 require 'riak/util/escape'
 require 'riak/walk_spec'
@@ -43,7 +42,7 @@ module Riak
     #   @param [String] key the key of the related resource
     #   @param [String] tag the tag for the related resource
     def initialize(*args)
-      raise ArgumentError unless (2..3).include?(args.size)
+      raise ArgumentError, "wrong number of arguments: (#{args.size} for 2..3)" unless (2..3).include?(args.size)
       if args.size == 2
         self.url, @tag = args
       else
@@ -87,7 +86,7 @@ module Riak
     end
 
     def to_walk_spec
-      raise t("bucket_link_conversion") if tag == "up" || key.nil?
+      raise Errors::InvalidLinkConversion if tag == "up" || key.nil?
       WalkSpec.new(:bucket => bucket, :tag => tag)
     end
   end

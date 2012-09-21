@@ -1,5 +1,4 @@
-
-require 'riak/failed_request'
+require 'riak/errors'
 require 'riak/client/http_backend'
 require 'riak/link'
 

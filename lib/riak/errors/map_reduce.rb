@@ -1,4 +1,4 @@
-require 'riak/errors/usage_errors'
+require 'riak/errors/usage'
 require 'riak/errors/request'
 
 module Riak
@@ -30,7 +30,7 @@ module Riak
           super t('invalid_phase_type')
         end
       end
-      
+
       # Raised when an invalid function is given to {Riak::MapReduce::Phase#function=}
       class InvalidPhaseFunction < InvalidArgument; end
 
@@ -62,7 +62,7 @@ module Riak
           super t("invalid_function_value", :value => function.inspect)
         end
       end
-      
+
       # Raised when a {Riak::MapReduce} job is submitted without phases but
       # the server does not support phaseless-MapReduce
       class EmptyQuery < MapReduceError

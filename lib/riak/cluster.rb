@@ -1,6 +1,7 @@
 require 'pathname'
 require 'riak/node'
 require 'riak/util/translation'
+require 'riak/errors'
 
 module Riak
   # Generates and controls a cluster of {Riak::Node} instances for use
@@ -26,7 +27,7 @@ module Riak
     # @option config [Fixnum] :min_port the base port number from
     #   which nodes will claim IP ports for HTTP, PB, handoff.
     def initialize(config={})
-      raise ArgumentError, t('source_and_root_required') unless config[:source] && config[:root]
+      raise Errors::MissingNodeConfiguration unless config[:source] && config[:root]
       @configuration = config
       @count = config.delete(:count) || 4
       @min_port = config.delete(:min_port) || 9000

@@ -1,4 +1,5 @@
 require 'builder'
+require 'riak/errors'
 
 module Riak
   class Client
@@ -37,7 +38,7 @@ module Riak
     # @raise [ArgumentError] if any documents don't include 'id' key
     def index(*args)
       index = args.shift if String === args.first # Documents must be hashes of fields
-      raise ArgumentError.new(t("search_docs_require_id")) unless args.all? {|d| d.key?("id") || d.key?(:id) }
+      raise Errors::InvalidSearchDoc unless args.all? {|d| d.key?("id") || d.key?(:id) }
       xml = Builder::XmlMarkup.new
       xml.add do
         args.each do |doc|
@@ -66,7 +67,7 @@ module Riak
     # @raise [ArgumentError] if any document specs don't include 'id' or 'query' keys
     def remove(*args)
       index = args.shift if String === args.first
-      raise ArgumentError.new(t("search_remove_requires_id_or_query")) unless args.all? { |s|
+      raise Errors::InvalidSearchRemove unless args.all? { |s|
         s.include? :id or
         s.include? 'id' or
         s.include? :query or

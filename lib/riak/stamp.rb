@@ -65,13 +65,4 @@ module Riak
       now
     end
   end
-
-  # Raised when calling {Stamp#next} and NTP or some other external
-  # event has moved the system clock backwards.
-  class BackwardsClockError < StandardError
-    include Util::Translation
-    def initialize(delay)
-      super t('backwards_clock', :delay => delay)
-    end
-  end
 end

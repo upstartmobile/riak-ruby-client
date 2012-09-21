@@ -4,7 +4,6 @@ require 'innertube'
 require 'riak'
 require 'riak/util/translation'
 require 'riak/util/escape'
-require 'riak/failed_request'
 require 'riak/client/decaying'
 require 'riak/client/node'
 require 'riak/client/search'
@@ -87,14 +86,14 @@ module Riak
     # @option options [String, Symbol] :http_backend (:NetHTTP) which  HTTP backend to use
     # @option options [String, Symbol] :protobuffs_backend (:Beefcake) which Protocol Buffers backend to use
     # @option options [Boolean, Hash]  :ssl (nil) The SSL options to pass to each node or true for default options
-    # @raise [ArgumentError] raised if any invalid options are given
+    # @raise [Errors::InvalidClientOptions] raised if any invalid options are given
     def initialize(options={})
       if options.include? :port
         warn(t('deprecated.port', :backtrace => caller[0..2].join("\n    ")))
       end
 
       unless (evil = options.keys - VALID_OPTIONS).empty?
-        raise ArgumentError, "#{evil.inspect} are not valid options for Client.new"
+        raise Errors::InvalidClientOptions, evil
       end
 
       @nodes = (options[:nodes] || []).map do |n|
@@ -148,9 +147,6 @@ module Riak
     # @option options [Boolean] :props (false) whether to retreive the bucket properties
     # @return [Bucket] the requested bucket
     def bucket(name, options={})
-      unless (options.keys - [:props]).empty?
-        raise ArgumentError, "invalid options"
-      end
       @bucket_cache ||= {}
       (@bucket_cache[name] ||= Bucket.new(self, name)).tap do |b|
         b.props if options[:props]
@@ -197,7 +193,7 @@ module Riak
               when 0...MAX_CLIENT_ID, String
                 value
               else
-                raise ArgumentError, t("invalid_client_id", :max_id => MAX_CLIENT_ID)
+                raise Errors::InvalidClientID
               end
 
       # Change all existing backend client IDs.
@@ -339,7 +335,7 @@ module Riak
 
         klass.new(self, node)
       else
-        raise t('http_configuration', :backend => @http_backend)
+        raise Errors::HTTPConfiguration, @http_backend
       end
     end
 
@@ -357,7 +353,7 @@ module Riak
 
         klass.new(self, node)
       else
-        raise t('protobuffs_configuration', :backend => @protobuffs_backend)
+        raise Errors::ProtobuffsConfiguration, @protobuffs_backend
       end
     end
 
@@ -393,7 +389,7 @@ module Riak
     # @return [String] the protocol being assigned
     def protocol=(value)
       unless PROTOCOLS.include?(value.to_s)
-        raise ArgumentError, t("protocol_invalid", :invalid => value, :valid => PROTOCOLS.join(', '))
+        raise Errors::InvalidProtocol, value
       end
 
       #TODO

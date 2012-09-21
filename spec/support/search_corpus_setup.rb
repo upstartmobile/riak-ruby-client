@@ -5,7 +5,7 @@ shared_context "search corpus setup" do
     @bucket.enable_index!
     @client.protocol = orig_proto
     idx = 0
-    IO.foreach("spec/fixtures/munchausen.txt") do |para|
+    IO.foreach("spec/fixtures/munchausen.txt", "rb:UTF-8") do |para|
       next if para =~ /^\s*$|introduction|chapter/i
       idx += 1
       Riak::RObject.new(@bucket, "munchausen-#{idx}") do |obj|

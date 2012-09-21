@@ -45,24 +45,13 @@ module Riak
           SearchQueryResp
        ].map {|s| s.intern }.freeze
 
-      def self.simple(method, code)
-        define_method method do
-          socket.write([1, MESSAGE_CODES.index(code)].pack('NC'))
-          decode_response
-        end
-      end
-
       attr_accessor :client
       attr_accessor :node
+
       def initialize(client, node)
         @client = client
         @node = node
       end
-
-      simple :ping,          :PingReq
-      simple :get_client_id, :GetClientIdReq
-      simple :server_info,   :GetServerInfoReq
-      simple :list_buckets,  :ListBucketsReq
 
       # Performs a secondary-index query via emulation through MapReduce.
       # @param [String, Bucket] bucket the bucket to query
@@ -73,7 +62,9 @@ module Riak
       def get_index(bucket, index, query)
         mr = Riak::MapReduce.new(client).index(bucket, index, query)
         unless mapred_phaseless?
-          mr.reduce(%w[riak_kv_mapreduce reduce_identity], :arg => {:reduce_phase_only_1 => true}, :keep => true)
+          mr.reduce(%w[riak_kv_mapreduce reduce_identity],
+                    :arg => {:reduce_phase_only_1 => true},
+                    :keep => true)
         end
         mapred(mr).map {|p| p.last }
       end
@@ -89,7 +80,9 @@ module Riak
       def search(index, query, options={})
         mr = Riak::MapReduce.new(client).search(index || 'search', query)
         unless mapred_phaseless?
-          mr.reduce(%w[riak_kv_mapreduce reduce_identity], :arg => {:reduce_phase_only_1 => true}, :keep => true)
+          mr.reduce(%w[riak_kv_mapreduce reduce_identity],
+                    :arg => {:reduce_phase_only_1 => true},
+                    :keep => true)
         end
         docs = mapred(mr).map {|d| {'id' => d[1] } }
         # Since we don't get this information back from the MapReduce,

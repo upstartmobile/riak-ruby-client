@@ -1,6 +1,5 @@
-
 require 'riak/client/http_backend'
-require 'riak/failed_request'
+require 'riak/errors'
 
 module Riak
   class Client

@@ -1,5 +1,6 @@
 require 'riak/encoding'
 require 'riak/core_ext'
+require 'riak/errors'
 require 'riak/client'
 require 'riak/map_reduce'
 require 'riak/util/translation'

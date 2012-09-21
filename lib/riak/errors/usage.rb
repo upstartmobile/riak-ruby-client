@@ -16,7 +16,7 @@ module Riak
       end
 
       def self.type_invalid?(value)
-         klass !== value
+         not klass === value
       end
     end
 
@@ -63,7 +63,7 @@ module Riak
       def self.type_invalid?(value)
         super && !value.respond_to?(:read)
       end
-      
+
       def initialize(not_body)
         super t('request_body_type')
       end
@@ -81,7 +81,7 @@ module Riak
         super t('invalid_io_object')
       end
     end
-    
+
     # Raised when an argument does not meet the contract of the method
     class InvalidArgument < ArgumentError
       include Util::Translation
@@ -137,6 +137,13 @@ module Riak
       end
     end
 
+    # Raised when an invalid client ID is given
+    class InvalidClientID < InvalidArgument
+      def initialize
+        super t('invalid_client_id', :max_id => Riak::Client::MAX_CLIENT_ID)
+      end
+    end
+
     # Raised when {Riak::RObject#store} is called on an object with an
     # unset content-type.
     class ContentTypeMissing < InvalidArgument
@@ -166,7 +173,7 @@ module Riak
         super t('wrong_argument_count_walk_spec')
       end
     end
-    
+
     # Raised when attempting to serialize Ruby data into a content
     # type that has no serializer defined.
     class NoSerializer < NotImplementedError
@@ -175,7 +182,7 @@ module Riak
         super t('serializer_not_implemented', :content_type => content_type.inspect)
       end
     end
-    
+
     # Raised when a client backend is not available because of bad
     # configuration or a missing library
     class BackendConfiguration < Error
