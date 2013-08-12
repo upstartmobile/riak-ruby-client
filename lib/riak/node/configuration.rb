@@ -5,7 +5,7 @@ module Riak
   class Node
     # The directories (and accessor methods) that will be created
     # under the generated node.
-    NODE_DIRECTORIES = [:bin, :etc, :log, :data, :ring, :pipe]
+    NODE_DIRECTORIES = [:bin, :etc, :log, :data, :ring, :pipe, :lib]
 
     NODE_DIRECTORIES.each do |dir|
       # Makes accessor methods for all the node directories that
@@ -103,10 +103,15 @@ module Riak
     # @return [Pathname] the root directory of the node
     attr_reader :root
 
+    SourceDest=Struct.new(:source,:dest, :basename)
+
     # The script for starting, stopping and pinging the Node.
     # @return [Pathname] the path to the control script
     def control_script
-      @control_script ||= root + 'bin' + control_script_name
+      @control_script ||= SourceDest.new(
+          source + control_script_name,
+          root + 'bin' + control_script_name,
+          control_script_name)
     end
 
     # The name of the 'riak' or 'riaksearch' control script.
@@ -119,7 +124,21 @@ module Riak
     # joining, leaving, status, ringready, etc.
     # @return [Pathname] the path to the administrative script
     def admin_script
-      @admin_script ||= root + 'bin' + "#{control_script_name}-admin"
+      @admin_script ||= SourceDest.new(
+          source+ "#{control_script_name}-admin",
+          root + 'bin' + "#{control_script_name}-admin",
+          "#{control_script_name}-admin")
+    end
+
+    def env_script
+      @env_script ||= SourceDest.new(
+          source.parent + 'lib' + env_script_name,
+          root + 'lib' + env_script_name,
+          env_script_name)
+    end
+
+    def env_script_name
+      "env.sh"
     end
 
     # The "manifest" file where the node configuration will be
