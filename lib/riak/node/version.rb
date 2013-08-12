@@ -25,13 +25,14 @@ module Riak
     def configure_base_dir
       # Use the script from the source directory so we don't require
       # it to be generated first.
-      (source + control_script_name).each_line.find {|l| l =~ /^RUNNER_BASE_DIR=(.*)/ }
+      (control_script.source).each_line.find {|l| l =~ /^RUNNER_BASE_DIR=(.*)/ }
+      (env_script.source).each_line.find {|l| l =~ /^RUNNER_BASE_DIR=(.*)/ } if $1.nil?
 
       # There should only be one matching line, so the contents of $1
       # will be the matched path. If there's nothing matched, we
       # return nil.
       case $1
-      when '${RUNNER_SCRIPT_DIR%/*}'
+      when '${RUNNER_SCRIPT_DIR%/*}','$(cd ${0%/*} && pwd)/..'
         source.parent
       when String
         Pathname.new($1).expand_path

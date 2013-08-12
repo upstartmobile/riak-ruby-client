@@ -72,11 +72,10 @@ module Riak
     end
 
     def write_scripts
-      [control_script, admin_script].each {|s| write_script(s.basename, s) }
+      [control_script, admin_script, env_script].each {|s| write_script(s.source, s.dest) }
     end
 
-    def write_script(name, target)
-      source_script = source + name
+    def write_script(source_script, target)
       target.open('wb') do |f|
         source_script.readlines.each do |line|
           line.sub!(/(RUNNER_SCRIPT_DIR=)(.*)/, '\1' + bin.to_s)
@@ -86,7 +85,7 @@ module Riak
           line.sub!(/(PIPE_DIR=)(.*)/, '\1' + pipe.to_s + "/") # PIPE_DIR must have a trailing slash
           line.sub!(/(PLATFORM_DATA_DIR=)(.*)/, '\1' + data.to_s)
           line.sub!('grep "$RUNNER_BASE_DIR/.*/[b]eam"', 'grep "$RUNNER_ETC_DIR/app.config"')
-          if line.strip == "RUNNER_BASE_DIR=${RUNNER_SCRIPT_DIR%/*}"
+          if line.strip == "RUNNER_BASE_DIR=${RUNNER_SCRIPT_DIR%/*}" || line.strip == "RUNNER_BASE_DIR=$(cd ${0%/*} && pwd)/.."
             line = "RUNNER_BASE_DIR=#{source.parent.to_s}\n"
           end
           f.write line
