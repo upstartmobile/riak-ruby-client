@@ -182,12 +182,12 @@ module Riak
     protected
     # Runs a command using the 'riak' control script.
     def riak(*commands)
-      `#{control_script} #{commands.join(' ')} 2>&1`
+      `#{control_script.dest} #{commands.join(' ')} 2>&1`
     end
 
     # Runs a command using the 'riak-admin' script.
     def riak_admin(*commands)
-      `#{admin_script} #{commands.join(' ')} 2>&1`
+      `#{admin_script.dest} #{commands.join(' ')} 2>&1`
     end
 
     # Waits for the HTTP port to become available, which is a better
