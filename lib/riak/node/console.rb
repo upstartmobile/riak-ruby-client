@@ -62,7 +62,8 @@ module Riak
             @r = open_read_pipe
             read_ready = true
           end
-          Thread.pass
+          # Thread.pass
+          sleep 1
           @w.print "\n" until read_ready
           command "ok."
           debug "Initialized console: #{@r.inspect} #{@w.inspect}"
