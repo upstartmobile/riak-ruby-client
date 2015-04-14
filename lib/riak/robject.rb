@@ -179,7 +179,7 @@ module Riak
     # @return [String] A representation suitable for IRB and debugging output
     def inspect
       body = @siblings.map {|s| s.inspect }.join(", ")
-      "#<#{self.class.name} {#{bucket.name}#{"," + @key if @key}} [#{body}]>"
+      "#<#{self.class.name} {#{bucket.name}#{"," + @key.to_s if @key}} [#{body}]>"
     end
 
     # Walks links from this object to other objects in Riak.
